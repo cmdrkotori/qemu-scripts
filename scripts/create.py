@@ -9,6 +9,8 @@ expanding to accomodate the actual data written.  You need to
 include the units as well.  T = terabytes, G = gigabytes, and
 M = megabytes.  For example, '200G' specifies an image with a
 capacity of 200 gigabytes.
+
+To not create an image at this time, press Enter.
 '''
 
 str_xrandr_set = '''
@@ -39,7 +41,8 @@ str_done = '''
 Config written.
 '''
 
-str_image_done = 'Image created.  Proceeding to create its options.'
+str_image_done = 'Image created.\n'
+str_image_not_done = 'Image creation failed.\n'
 str_size_prompt = 'Enter size of image: '
 str_select_prompt = 'Make selection: '
 
@@ -88,8 +91,11 @@ def create(name):
   print str_enter_size
   size = raw_input(str_size_prompt)
   
-  call(['qemu-img', 'create', '-f', 'qcow2', vm_dir + '/' + 'disk.img', size])
-  print str_image_done
+  if call(['qemu-img', 'create', '-f', 'qcow2', vm_dir + '/' + 'disk.img',
+           size]):
+    print str_image_not_done
+  else:
+    print str_image_done
   
   config = {}
   config['mac'] = {'hostnet': network.gen_mac(), 'usernet': network.gen_mac()}
