@@ -1,0 +1,11 @@
+__pycache__/
+vm/
+scratchpad/
+share/
+.directory 
+*.pyc
+*.iso
+*.sh
+*.json
+*.conf
+*.pid
