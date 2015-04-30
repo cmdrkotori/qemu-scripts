@@ -88,7 +88,7 @@ def create(name):
   print str_enter_size
   size = raw_input(str_size_prompt)
   
-  call(['qemu-img', 'create', '-f', 'qcow2', vm_dir + '/' + 'disk.img'])
+  call(['qemu-img', 'create', '-f', 'qcow2', vm_dir + '/' + 'disk.img', size])
   print str_image_done
   
   config = {}
