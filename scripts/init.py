@@ -287,27 +287,40 @@ def look_for_procs(stanza):
 def print_description():
   print str_description
 
+def chown_user(fname):
+  username = detect_username
+  call(['chown', '{}:{}'.format(username,username), fname])
 
 def create_dirs(dirs):
   print 'Creating directories...'
+  username = detect_username()
   for d in dirs:
     if not os.path.exists(d):
       print 'Creating {}'.format(d)
+      call(['mkdir', d])
+      chown_user(d)
   print 'Directories are created.\n'
 
-
-def setup_samba():
-  print str_samba
+def detect_username():
   try:
     username = os.environ['SUDO_USER']
   except:
     username = os.environ['USER']
+  return username
+
+def setup_samba():
+  print str_samba
+  username = detect_username()
   print str_detected_user.format(username)
   
   conf = str_smb_conf.format('qemuhost', os.path.realpath('share'), username)
   
+  if not os.path.exists('conf'):
+    call(['mkdir', 'conf'])
+    call(['chown', username+':'+username, 'conf'])
   with open('conf/smb.conf', 'wb') as f:
     f.write(conf)
+    chown_user('conf/smb.conf')
   print 'Host-only samba configuration written.\n'
 
 
@@ -403,7 +416,7 @@ def install_grub(pci_stub_ids):
 def write_host_conf(pci_stub_devices = None):
   print str_network
   phys, addr, mask, bcast, gw = netinfo.phys_addr_bcast_gw()
-  cfg = conf.read_host_conf()
+  cfg = conf.read_host_conf(False)
   cfg['net'] = { 'phys': phys, 'addr': addr, 'mask': mask, 'bcast': bcast,
     'gw': gw }
   # if pci_stub_devices is None, it probably means we're in the init me
@@ -427,7 +440,7 @@ def do_init():
   print_description()
   if not proceed():
     return
-  create_dirs(['_conf', '_img', '_roms', '_share', '_splash'])
+  create_dirs(['conf', 'vm', 'share'])
   setup_samba()
   print_passthrough_warning()
   if not proceed():

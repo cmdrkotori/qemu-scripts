@@ -103,5 +103,5 @@ def create(name):
   selected = xrandr_select()
   config['xrandr'] = [{'output': output, 'location':[]}
                       for output in selected]  
-  conf.write_guest_conf(name, config)
-  print str_done
+  if conf.write_guest_conf(name, config):
+    print str_done

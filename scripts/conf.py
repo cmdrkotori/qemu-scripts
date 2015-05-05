@@ -5,31 +5,39 @@ fn_host_conf = 'conf/host.json'
 fn_guest_conf = 'conf/vm_{}.json'
 fn_conf_dir = 'conf'
 
-def get_conf(fname):
+def get_conf(fname, write_error = True):
   try:
     with open(fname, 'r') as jsonfile:
       return json.load(jsonfile)
   except:
-    print('Unable to read {}!'.format(fname))
+    if write_error:
+      print('Unable to read {}!'.format(fname))
+      print('Perhaps there is a syntax or permissions issue.')
     return {}
 
 def set_conf(fname, opts):
   if not os.path.exists(fn_conf_dir):
     os.makedirs(fn_conf_dir)
-  with open(fname, 'w') as jsonfile:
-    json.dump(opts, jsonfile, indent=4, sort_keys=True)
+  try:
+    with open(fname, 'w') as jsonfile:
+        json.dump(opts, jsonfile, indent=4, sort_keys=True)
+    return fname
+  except:
+    print('Could not write to {}! Perhaps there is a permissions problem.'.
+          format(fname))
+    return None
 
-def read_host_conf():
-  return get_conf(fn_host_conf)
+def read_host_conf(write_error = True):
+  return get_conf(fn_host_conf, write_error)
 
 def write_host_conf(opts):
-  set_conf(fn_host_conf, opts)
+  return set_conf(fn_host_conf, opts)
 
-def read_guest_conf(vmname):
-  return get_conf(fn_guest_conf.format(vmname))
+def read_guest_conf(vmname, write_error = True):
+  return get_conf(fn_guest_conf.format(vmname), write_error)
 
 def write_guest_conf(vmname, opts):
-  set_conf(fn_guest_conf.format(vmname), opts)
+  return set_conf(fn_guest_conf.format(vmname), opts)
 
 if __name__=='__main__':
   #print read_host_conf()

@@ -10,8 +10,8 @@ def perform(mount_dict):
       call( [ 'mkdir', where ] )
     else:
       if os.path.ismount(where):
-        call( [ 'umount', where ] )
-    call( [ 'mount', '--bind', what, where ] )
+        call( [ 'sudo', 'umount', where ] )
+    call( [ 'sudo', 'mount', '--bind', what, where ] )
     print ''.join(['Mounted ', value, ' to ', key])
 
 def is_mount_in_mtab(mount):
@@ -28,7 +28,7 @@ def clean():
                      if is_mount_in_mtab(os.path.realpath(name))]
 
   for folder in mounted_folders:
-    call(['umount', folder])
+    call(['sudo', 'umount', folder])
     
   for folder in folders:
     if len(os.listdir(folder))==0:
