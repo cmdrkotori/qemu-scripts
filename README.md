@@ -13,6 +13,7 @@ direction.
 ## Prerequisites
 
 * Python 2.7
+* qemu-system-x86
 * bridge-utils
 * samba (for sharing files with Windows hosts)
 * Synergy (optional, run that yourself.)
@@ -21,9 +22,10 @@ direction.
 
 First initialize your system.  This mostly makes your system capable of
 passing through your second video card, and gathers some information about
-your system.  This init script should work on Arch, Fedora, and Ubuntu.
+your system.  This init script should work on Arch, Fedora, and Ubuntu.  (It
+needs superuser permissions to write to system config files.)
 
->./init.py
+>sudo ./init.py
 
 >reboot
 
@@ -44,6 +46,9 @@ you may also want to edit this script to your liking instead.
 >./launch.py win7 basic
 
 ## Caveats
+
+The scripts will fail if they are not invoked correctly or the prerequisites
+are not met.
 
 This script is designed for passing through a single video card only.  It
 does offer some windowed modes, however.
