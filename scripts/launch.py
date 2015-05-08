@@ -46,7 +46,7 @@ def hostnet_up():
   dnsmasq = Popen(['sudo', 'dnsmasq', '-k',
                    '--interface=br0', '--bind-interfaces',
 		   '--dhcp-range=192.168.101.10,192.168.101.254'])
-  smbd = Popen(['sudo', 'smbd', '-i', '-s', 'conf/smb.conf', '--piddir=.'])
+  smbd = Popen(['sudo', 'smbd', '-D', '-F', '-S', '-s', 'conf/smb.conf', '--piddir=.'])
   
 def hostnet_down():
   # kill daemons politely
