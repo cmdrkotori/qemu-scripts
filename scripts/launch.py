@@ -479,7 +479,8 @@ def do_launch(guest, args):
   # run the vm
   qemu_binary = 'qemu-system-x86_64'
   qemu_command = ' '.join([qemu_binary] + qemu_args).split()
-  print 'Launching:\n\t' + qemu_binary + ' \\\n\t  '.join(qemu_args) + '\n'
+  print 'Launching:\n\t' + qemu_binary + ' \\\n\t  ' + \
+        ' \\\n\t  '.join(qemu_args) + '\n'
   vm = Popen(['sudo'] + qemu_command, env=my_env)
   print 'FOR WHAT PURPOSE: ' + model['purpose']
   vm.wait()
