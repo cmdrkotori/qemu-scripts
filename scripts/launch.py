@@ -157,7 +157,7 @@ qemu_drives = {
     'cdrom': 'ide',
     'disks': 'ide',
     'drive': [
-      'if=ide,file=ide,vm/{}/disk.img,media=disk',
+      'if=ide,file=vm/{}/disk.img,media=disk',
       'if=virtio,file=img/temp.qcow2,media=disk'
     ]
   },
