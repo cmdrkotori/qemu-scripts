@@ -306,7 +306,7 @@ def print_usage():
       '	You will step through these systems, typically from basic to modern.',
       '	(going backwards may harm your system, and is not recommended.)',
       '	Members of the multi-gpu master race can proceed on to nohead.',
-      '	Linux vms can start at modern or complex.'
+      '	Linux vms can start at modern or complex.',
       '',
       'OPTIONS	Further options tweaking the layout of the system.',
       '	cpu:fake  You conned yourself into a fake intel thread per core',
@@ -336,7 +336,7 @@ def print_usage():
 # rather than cmdline args
 def process_args(guest, args):
   # check for too few arguments
-  if len(args) < 1:
+  if not args or len(args) < 1:
     print_usage()
     exit(1)
 
@@ -445,7 +445,8 @@ def do_launch(guest, args):
   if not os.path.exists('splash/boot.jpg'):
     qemu_parts['boot'] = {}
 
-  wire_config_into_parts(guest)
+  if guest:
+    wire_config_into_parts(guest)
 
   # build desired model details
   qemu_args = process_args(guest, args)
