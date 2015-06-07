@@ -364,9 +364,9 @@ def process_args(guest, args):
       elif head == 'm':
 	memory = tail
       elif head == 'cd':
-	isos.append('_img/'+tail)
+	isos.append('img/'+tail)
       elif head == 'dd':
-	imgs.append('_img/'+tail)
+	imgs.append('img/'+tail)
       elif head == 'cdv':
 	isos.append('vm/{}/{}'.format(vm_name,tail))
       elif head == 'ddv':
