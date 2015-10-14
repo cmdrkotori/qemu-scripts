@@ -8,6 +8,8 @@ import mounting
 
 dnsmasq = None
 smbd = None
+smb = True
+nohost = False
 
 host_conf = {}
 guest_conf = {}
@@ -21,6 +23,12 @@ def hostnet_up():
   # oh btw, the taps need to be promiscuous for samba to work.
   global dnsmasq
   global smbd
+  global smb
+  global nohost
+  
+  if nohost:
+    return
+  
   #global nmbd
   # setup bridge
   call(['sudo', 'brctl','addbr','br0'])
@@ -46,12 +54,18 @@ def hostnet_up():
   dnsmasq = Popen(['sudo', 'dnsmasq', '-k',
                    '--interface=br0', '--bind-interfaces',
 		   '--dhcp-range=192.168.101.10,192.168.101.254'])
-  smbd = Popen(['sudo', 'smbd', '-D', '-F', '-S', '-s', 'conf/smb.conf', '--piddir=.'])
+  if smb:
+    smbd = Popen(['sudo', 'smbd', '-D', '-F', '-S', '-s', 'conf/smb.conf', '--piddir=.'])
   
 def hostnet_down():
+  global nohost
+  if nohost:
+    return
+  
   # kill daemons politely
   call(['sudo', 'kill', str(-15), str(dnsmasq.pid)])
-  call(['sudo', 'kill', str(-15), str(smbd.pid)])
+  if smb:
+    call(['sudo', 'kill', str(-15), str(smbd.pid)])
 
   # remove taps from bridge
   call(['sudo', 'brctl', 'delif', 'br0', 'tap0'])
@@ -95,6 +109,7 @@ qemu_parts = {
     'netdev': 'tap,id=hostnet,ifname=tap1,script=no,downscript=no',
 #    'net': 'nic,model=virtio,macaddr=52:54:ea:d6:1b:ae,netdev=hostnet'
     'net': 'nic,model=virtio,macaddr={},netdev=hostnet'
+# ^^ virtio
   },
   'usernet1': {
     'netdev': 'user,id=usernet',
@@ -105,6 +120,7 @@ qemu_parts = {
     'netdev': 'user,id=usernet',
 #    'net': 'nic,model=virtio,macaddr=52:54:ad:47:98:03,netdev=usernet'
     'net': 'nic,model=virtio,macaddr={},netdev=usernet'
+## ^^ virtio
   },
   'usb': {
     'usb': '',
@@ -311,6 +327,9 @@ def print_usage():
       'OPTIONS	Further options tweaking the layout of the system.',
       '	cpu:fake  You conned yourself into a fake intel thread per core',
       '	vga:hack  Add a dummy isa vga to kickstart some pcie cards',
+      '	smb:none  Do not share any folder over the network',
+      '	user:none Do not provide a internet-visible network adapter',
+      '	host:none Do not provide any host-only networks',
       '	m:ram     Set the amount of ram given to the OS (e.g. m:32G)',
       '	cd:img    mount image from the _img directory as a cdrom',
       '	dd:img    mount image from the _img directory as a disk',
@@ -335,6 +354,7 @@ def print_usage():
 ## TODO: Every arg in this function should come from a conf file
 # rather than cmdline args
 def process_args(guest, args):
+  global smb
   # check for too few arguments
   if not args or len(args) < 1:
     print_usage()
@@ -353,6 +373,7 @@ def process_args(guest, args):
   vgahack = 0
   cores = 4
   idiot = 0
+  smb = True
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -361,6 +382,15 @@ def process_args(guest, args):
 	vgahack = 1
       elif arg == 'cpu:fake':
 	idiot = 1
+      elif arg == 'smb:none':
+        smb = False
+      elif arg == 'user:none':
+        qemu_parts['usernet1'] = {}
+        qemu_parts['usernet2'] = {}
+      elif arg == 'host:none':
+        qemu_parts['hostnet'] = {}
+        nohost = True
+        smb = False
       elif head == 'm':
 	memory = tail
       elif head == 'cd':
@@ -474,7 +504,7 @@ def do_launch(guest, args):
       Popen(['xrandr'] + xrandr_opts, env=my_env)
 
   # mount shared folders
-  if 'smb' in host_conf:
+  if smb and 'smb' in host_conf:
     mounting.perform(host_conf['smb'])
 
   # run the vm
@@ -491,7 +521,7 @@ def do_launch(guest, args):
     model['post']()
 
   # clean up shared folders
-  if 'smb' in host_conf:
+  if smb and 'smb' in host_conf:
     mounting.clean()
     
   # turn the display(s) back on
