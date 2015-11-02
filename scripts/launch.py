@@ -87,7 +87,7 @@ qemu_parts = {
     'enable-kvm': ''
   },
   'cpu1': {
-    'cpu': 'host,hv-time'
+    'cpu': 'host,hv-time,kvm=off'
   },
   'cpu2': {
     'smp': '4,cores=4'
