@@ -59,6 +59,8 @@ def hostnet_up():
   
 def hostnet_down():
   global nohost
+  global dnsmasq
+  global smbd
   if nohost:
     return
   
