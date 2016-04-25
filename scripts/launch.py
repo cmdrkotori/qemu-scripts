@@ -55,7 +55,7 @@ def hostnet_up():
                    '--interface=br0', '--bind-interfaces',
 		   '--dhcp-range=192.168.101.10,192.168.101.254'])
   if smb:
-    smbd = Popen(['sudo', 'smbd', '-D', '-F', '-S', '-s', 'conf/smb.conf', '--piddir=.'])
+    smbd = Popen(['sudo', 'smbd', '-D', '-i', '-F', '-S', '-s', 'conf/smb.conf'])
   
 def hostnet_down():
   global nohost
