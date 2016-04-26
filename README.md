@@ -62,7 +62,8 @@ Windows guests.
 
 The 'shares' folder must not be a symlink.  This can cause connections to
 smbd to (partially) hang.  Use the provided functionality to bind folders in
-your filesystem to it instead.
+your filesystem to it instead.  Any system-wide smbd and nmbd should be
+disabled.
 
 The launch.py and init.py script takes as many options as you like, such as
 extra images to mount and usb devices to pass through.  I recommend you store
