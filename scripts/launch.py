@@ -346,7 +346,7 @@ def print_usage():
       'Examples:',
       '\t' + sys.argv[0] + ' archaic dos',
       '\t' + sys.argv[0] + ' virtio winxp barf',
-      '\t' + sys.argv[0] + ' modern win7 vga:hack cpu:fake c:2',
+      '\t' + sys.argv[0] + ' modern win7 vga:hack cpu:smt c:2',
       '\t' + sys.argv[0] + ' complex win7 games',
       '\t' + sys.argv[0] + ' nohead coinminer',
       ''
