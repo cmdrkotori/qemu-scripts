@@ -71,6 +71,7 @@ def detect():
   global arch
   conf = read_conf_keys('/etc/os-release')
   keys_to_try = ['ID', 'ID_LIKE']
+  arches['neon'] = arches['debian']
   for key in keys_to_try:
     if key in conf:
       release = conf[key]
@@ -81,7 +82,7 @@ def detect():
 
 
 def inline_add(fname, parms):
-  config = []
+  call(['touch', fname])
   with open(fname, 'r') as f:
     config = f.read().split('\n')
   c = OrderedDict().fromkeys(config)
