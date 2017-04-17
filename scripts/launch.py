@@ -327,7 +327,7 @@ def print_usage():
       '	Linux vms can start at modern or complex.',
       '',
       'OPTIONS	Further options tweaking the layout of the system.',
-      '	cpu:fake  You conned yourself into a fake intel thread per core',
+      '	cpu:smt   Use two threads per core',
       '	vga:hack  Add a dummy isa vga to kickstart some pcie cards',
       '	smb:none  Do not share any folder over the network',
       '	user:none Do not provide a internet-visible network adapter',
@@ -346,7 +346,7 @@ def print_usage():
       'Examples:',
       '\t' + sys.argv[0] + ' archaic dos',
       '\t' + sys.argv[0] + ' virtio winxp barf',
-      '\t' + sys.argv[0] + ' modern win7 vga:hack cpu:fake c:2',
+      '\t' + sys.argv[0] + ' modern win7 vga:hack cpu:smt c:2',
       '\t' + sys.argv[0] + ' complex win7 games',
       '\t' + sys.argv[0] + ' nohead coinminer',
       ''
@@ -374,7 +374,7 @@ def process_args(guest, args):
   usbs = []
   vgahack = 0
   cores = 4
-  idiot = 0
+  smt = 0
   smb = True
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
@@ -382,8 +382,8 @@ def process_args(guest, args):
     if tail:
       if arg == 'vga:hack':
 	vgahack = 1
-      elif arg == 'cpu:fake':
-	idiot = 1
+      elif arg == 'cpu:smt':
+	smt = 1
       elif arg == 'smb:none':
         smb = False
       elif arg == 'user:none':
@@ -415,9 +415,9 @@ def process_args(guest, args):
       qemu_parts['emu']['no-acpi'] = ''
   if not vgahack:
     qemu_parts['vgahack'] = {}
-  if not idiot:
+  if not smt:
     qemu_parts['cpu2']['smp'] = 'cores={}'.format(cores)
-  else:		#inb4 idiots confuse 'hyper'threads with actual cores
+  else:
     qemu_parts['cpu2']['smp'] = 'cores={},threads=2'.format(cores)
   qemu_parts['memory']['m'] = memory
   

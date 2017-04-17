@@ -1,4 +1,9 @@
 #!/usr/bin/python
+
+#
+# LEGACY SCRIPT -- use run.py instead
+#
+
 import sys
 import subprocess, os
 from subprocess import Popen, call
@@ -302,7 +307,7 @@ def print_usage():
       '	Linux vms can start at modern or complex.'
       '',
       'OPTIONS	Further options tweaking the layout of the system.',
-      '	cpu:fake  You conned yourself into a fake intel thread per core',
+      '	cpu:smt   Use two threads per core',
       '	vga:hack  Add a dummy isa vga to kickstart some pcie cards',
       '	m:ram	  Set the amount of ram given to the OS (e.g. m:32G)',
       '	cd:img	  mount image from the _img directory as a cdrom',
@@ -318,7 +323,7 @@ def print_usage():
       'Examples:',
       '\t' + sys.argv[0] + ' archaic dos',
       '\t' + sys.argv[0] + ' virtio winxp barf',
-      '\t' + sys.argv[0] + ' modern win7 cpu:fake c:2',
+      '\t' + sys.argv[0] + ' modern win7 cpu:smt c:2',
       '\t' + sys.argv[0] + ' complex win7 vga:hack',
       '\t' + sys.argv[0] + ' nohead coinminer',
       ''
@@ -345,7 +350,7 @@ def process_args():
   usbs = []
   vgahack = 0
   cores = 4
-  idiot = 0
+  smt = 0
   memory = qemu_model_drive['model']['memory']
   for arg in sys.argv[3:]:
     head,sep,tail = arg.partition(':')
@@ -353,7 +358,7 @@ def process_args():
       if arg == 'vga:hack':
 	vgahack = 1
       elif arg == 'cpu:fake':
-	idiot = 1
+	smt = 1
       elif head == 'm':
 	memory = tail
       elif head == 'cd':
@@ -376,7 +381,7 @@ def process_args():
       qemu_parts['emu']['no-acpi'] = ''
   if not vgahack:
     qemu_parts['vgahack'] = {}
-  if not idiot:
+  if not smt:
     qemu_parts['cpu2']['smp'] = 'cores={}'.format(cores)
   else:		#inb4 idiots confuse 'hyper'threads with actual cores
     qemu_parts['cpu2']['smp'] = 'cores={},threads=2'.format(cores)
@@ -420,6 +425,8 @@ def process_args():
 # - better integration with caller script
 
 #def do_launch(host_conf, guest):
+print 'LEGACY SCRIPT -- use run.py instead\n'
+
   # check for boot splash -- remove detail entry in parts list if not there
 if not os.path.exists('_splash/boot.jpg'):
   qemu_parts['boot'] = {}

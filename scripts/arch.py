@@ -81,6 +81,7 @@ def detect():
 
 
 def inline_add(fname, parms):
+  config = []
   with open(fname, 'r') as f:
     config = f.read().split('\n')
   c = OrderedDict().fromkeys(config)
@@ -140,8 +141,15 @@ def install_module_initramfs(modules):
     inline_parm_add(mod_info['loc'], mod_info['var'], modules)
   else:
     inline_add(mod_info['loc'], modules)
-  call(mod_info['cmd'])
   return mod_info['loc']
+
+def install_module_note(module, note):
+  fname = ''.join(['/etc/modprobe.d/', module, '.conf'])
+  inline_add(fname, note)
+  return fname
+
+def update_initramfs():
+  call(arch['modules']['cmd'])
 
 
 def install_grub_options(options):

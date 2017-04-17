@@ -253,7 +253,7 @@ def pci_id_to_cards(pci_id):
     devices = find_pci_id_tree(pci)
     if len(devices) == 0:
       break
-    vfio_devices.extend(find_pci_id_tree(pci))
+    vfio_devices.append(devices[-1])
     pci_stub_devices.append(pci)
     index += 1
   tree = list(OrderedDict.fromkeys(vfio_devices))
@@ -288,7 +288,7 @@ def print_description():
   print str_description
 
 def chown_user(fname):
-  username = detect_username
+  username = detect_username()
   call(['chown', '{}:{}'.format(username,username), fname])
 
 def create_dirs(dirs):
@@ -402,6 +402,8 @@ def install_vfio_bind_script():
 def install_modules():
   print str_modules
   files_modified.append(arch.install_module_initramfs(['pci-stub']))
+  files_modified.append(arch.install_module_note('drm', 'softdep drm pre: pci-stub'))
+  arch.update_initramfs()
 
 def install_grub(pci_stub_ids):
   psi = 'pci-stub.ids'
@@ -465,4 +467,5 @@ def do_init():
 	  'take effect.\n'
       
 if __name__ == '__main__':
-    do_init();
+  do_init();
+
