@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # arch.py - Architecture-specific functions for dealing with conf files
 # Licensed under GPLv2.
 
@@ -21,7 +21,7 @@ arches = {
     'modules': {
       'loc': '/etc/mkinitcpio.conf',
       'var': 'MODULES',
-      'cmd': ['sudo', 'mkinitcpio', '-p', 'linux-mainline']
+      'cmd': ['sudo', 'mkinitcpio', '-p', 'linux']
       },
     'grub': {
       'loc': '/etc/default/grub',
