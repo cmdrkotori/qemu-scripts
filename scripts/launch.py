@@ -160,6 +160,10 @@ qemu_parts = {
   },
   'name': {
     'name': ''
+  },
+  'mirror': {
+    'device': 'ivshmem-plain,memdev=ivshmem',
+    'object': 'memory-backend-file,id=ivshmem,share=on,mem-path=/dev/shm/looking-glass,size=32M'
   }
 } 
 
@@ -228,7 +232,7 @@ qemu_model = [
   }],
   ['modern', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'hostnet',
-	      'usernet2', 'usb', 'audio', 'drive', 'splash', 'name'],
+	      'usernet2', 'usb', 'audio', 'drive', 'splash', 'name', 'mirror'],
     'drives': 'virtio',
     'desc': 'q35/virtio system, 8G of ram, host-only networking, and audio',
     'purpose': 'Teach your system about the q35 architechture.\n'
@@ -240,7 +244,7 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
 	      'usernet2', 'usb', 'vgahack', 'vga3', 'audio', 'drive',
-	      'splash', 'name'],
+	      'splash', 'name', 'mirror' ],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -253,7 +257,7 @@ qemu_model = [
   ['nohead', {
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
 	       'hostnet', 'usernet2', 'usb', 'vgahack', 'vga3', 'audio',
-	       'drive', 'splash', 'name'],
+	       'drive', 'splash', 'name', 'mirror'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -332,6 +336,7 @@ def print_usage():
       '	smb:none  Do not share any folder over the network',
       '	user:none Do not provide a internet-visible network adapter',
       '	host:none Do not provide any host-only networks',
+      '	mirror    Add 32M of shared memory for project looking glass',
       '	m:ram     Set the amount of ram given to the OS (e.g. m:32G)',
       '	cd:img    mount image from the _img directory as a cdrom',
       '	dd:img    mount image from the _img directory as a disk',
@@ -376,6 +381,7 @@ def process_args(guest, args):
   cores = 4
   smt = 0
   smb = True
+  mirror = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -413,8 +419,15 @@ def process_args(guest, args):
 	cores = int(tail)
     elif arg == 'barf':
       qemu_parts['emu']['no-acpi'] = ''
+    elif arg == 'mirror':
+      mirror = True
   if not vgahack:
     qemu_parts['vgahack'] = {}
+  if not mirror:
+    qemu_parts['mirror'] = {}
+  else:
+    Popen(['touch', '/dev/shm/looking-glass']).wait()
+    Popen(['chmod', '666', '/dev/shm/looking-glass']).wait()
   if not smt:
     qemu_parts['cpu2']['smp'] = 'cores={}'.format(cores)
   else:
