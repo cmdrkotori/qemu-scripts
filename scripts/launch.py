@@ -124,10 +124,18 @@ qemu_parts = {
     'net': 'nic,model=virtio,macaddr={},netdev=usernet'
 ## ^^ virtio
   },
-  'usb': {
-    'usb': '',
-    'usbdevice': [
-     ]
+  'usb1': {
+    'usb': ''
+  },
+  'usb2': {
+    'device': [
+      'usb-ehci,id=ehci',
+      'usb-kbd,bus=usb-bus.0',
+      'usb-mouse,bus=usb-bus.0'
+    ]
+  },
+  'usbdev': {
+    'device': [ ]
   },
   'vga1': {
     'vga': 'std'
@@ -196,7 +204,7 @@ qemu_drives = {
 qemu_model = [
   ['archaic', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'moboisa', 'vga1', 'drive',
-	      'splash', 'name' ],
+              'splash', 'name' ],
     'drives': 'ide1',
     'desc': 'ISA-only system with no ethernet',
     'purpose': 'To run really ancient systems',
@@ -204,7 +212,7 @@ qemu_model = [
   }],
   ['basic', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet1',
-	      'usb', 'drive', 'splash', 'name'],
+              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
     'drives': 'ide1',
     'desc': 'PCI-based system with 1G of ram and a PIIX chipset',
     'purpose': 'You should install your OS and get your virtio drivers '
@@ -213,7 +221,7 @@ qemu_model = [
   }],
   ['simple', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet1',
-	      'usb', 'drive', 'splash', 'name'],
+              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
     'drives': 'ide2',
     'desc': 'As above with a dummy virtio disk',
     'purpose': 'Teach your OS about virtio disks.',
@@ -221,7 +229,7 @@ qemu_model = [
   }],
   ['virtio', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet2',
-	      'hostnet', 'usb', 'drive', 'splash', 'name'],
+              'hostnet', 'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
     'drives': 'virtio',
     'desc': 'As above with a virtio host-only network and virtio disks',
     'purpose': 'Teach your OS about virtio network adapters and '
@@ -232,7 +240,8 @@ qemu_model = [
   }],
   ['modern', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'hostnet',
-	      'usernet2', 'usb', 'audio', 'drive', 'splash', 'name', 'mirror'],
+              'usernet2', 'usb1', 'usb2', 'usbdev', 'audio', 'drive',
+              'splash', 'name', 'mirror'],
     'drives': 'virtio',
     'desc': 'q35/virtio system, 8G of ram, host-only networking, and audio',
     'purpose': 'Teach your system about the q35 architechture.\n'
@@ -243,8 +252,8 @@ qemu_model = [
   }],
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
-	      'usernet2', 'usb', 'vgahack', 'vga3', 'audio', 'drive',
-	      'splash', 'name', 'mirror' ],
+              'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
+              'audio', 'drive', 'splash', 'name', 'mirror' ],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -256,8 +265,8 @@ qemu_model = [
   }],
   ['nohead', {
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
-	       'hostnet', 'usernet2', 'usb', 'vgahack', 'vga3', 'audio',
-	       'drive', 'splash', 'name', 'mirror'],
+              'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
+              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -344,7 +353,8 @@ def print_usage():
       '	ddv:img   mount image from the vm directory as a disk',
       '	cdg:img   mount image from the filesystem as a cdrom',
       '	ddg:img   mount image from the filesystem as a disk',
-      '	usb:x:y   pass usbdevice xxxx:yyyy where available',
+      '	usb1:x:y  pass usbdevice xxxx:yyyy where available as usb1',
+      '	usb2:x:y  pass usbdevice xxxx:yyyy where available as usb2',
       '	c:cores   Set the number of emulated cores',
       '	barf      Your vm barfs at acpi tables',
       '',
@@ -376,7 +386,8 @@ def process_args(guest, args):
   # parse extra options if any -- these effect parsing of first
   isos = []
   imgs = []
-  usbs = []
+  usbs1 = []
+  usbs2 = []
   vgahack = 0
   cores = 4
   smt = 0
@@ -413,8 +424,10 @@ def process_args(guest, args):
 	isos.append(tail)
       elif head == 'ddg':
 	imgs.append(tail)
-      elif head == 'usb':
-	usbs.append(tail)
+      elif head == 'usb1':
+	usbs1.append(tail)
+      elif head == 'usb2':
+	usbs2.append(tail)
       elif head == 'c':
 	cores = int(tail)
     elif arg == 'barf':
@@ -450,13 +463,16 @@ def process_args(guest, args):
 
   # build a list usbdevices for the vm
   usbdevices = []
-  for usb in usbs:
+  for usb in usbs1:
     if usb:
-      usbdevices.append('host:{}'.format(usb))
+      usbdevices.append('usb-host,vendorid=0x{},productid=0x{},bus=usb-bus.0'.format(usb[0:4],usb[5:9]))
+  for usb in usbs2:
+    if usb:
+      usbdevices.append('usb-host,vendorid=0x{},productid=0x{},bus=ehci.0'.format(usb[0:4],usb[5:9]))
   
   # add accumulated option detail to the parts list
   qemu_parts['drive']['drive'] = drives
-  qemu_parts['usb']['usbdevice'] = usbdevices
+  qemu_parts['usbdev']['device'] = usbdevices
   qemu_parts['name']['name'] = vm_name
 
   # return a freshly baked parameter list
