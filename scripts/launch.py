@@ -129,9 +129,9 @@ qemu_parts = {
   },
   'usb2': {
     'device': [
-      'usb-ehci,id=ehci',
-      'usb-kbd,bus=usb-bus.0',
-      'usb-mouse,bus=usb-bus.0'
+      'usb-ehci,id=ehci'#,
+      #'usb-kbd,bus=usb-bus.0',
+      #'usb-mouse,bus=usb-bus.0'
     ]
   },
   'usbdev': {
