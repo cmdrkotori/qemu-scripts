@@ -172,6 +172,9 @@ qemu_parts = {
   'mirror': {
     'device': 'ivshmem-plain,memdev=ivshmem',
     'object': 'memory-backend-file,id=ivshmem,share=on,mem-path=/dev/shm/looking-glass,size=32M'
+  },
+  'huge': {
+    'object': 'memory-backend-file,id=mem,size={},mem-path=/hugetlbfs,share=on'
   }
 } 
 
@@ -253,7 +256,7 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
-              'audio', 'drive', 'splash', 'name', 'mirror' ],
+              'audio', 'drive', 'splash', 'name', 'mirror', 'huge' ],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -266,7 +269,7 @@ qemu_model = [
   ['nohead', {
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
-              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror'],
+              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -393,6 +396,7 @@ def process_args(guest, args):
   smt = 0
   smb = True
   mirror = False
+  huge = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -434,6 +438,8 @@ def process_args(guest, args):
       qemu_parts['emu']['no-acpi'] = ''
     elif arg == 'mirror':
       mirror = True
+    elif arg == 'huge':
+      huge = True
   if not vgahack:
     qemu_parts['vgahack'] = {}
   if not mirror:
@@ -445,6 +451,10 @@ def process_args(guest, args):
     qemu_parts['cpu2']['smp'] = 'cores={}'.format(cores)
   else:
     qemu_parts['cpu2']['smp'] = 'cores={},threads=2'.format(cores)
+  if not huge:
+    qemu_parts['huge'] = {}
+  else:
+    qemu_parts['huge']['object'] = qemu_parts['huge']['object'].format(memory)
   qemu_parts['memory']['m'] = memory
   
   # build a list of drives for the vm
