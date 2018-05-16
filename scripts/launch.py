@@ -175,6 +175,14 @@ qemu_parts = {
   },
   'huge': {
     'object': 'memory-backend-file,id=mem,size={},mem-path=/hugetlbfs,share=on'
+  },
+  'spice': {
+    'spice': 'addr=127.0.0.1,port=5900,disable-ticketing',
+    'device': [
+      'virtio-serial-pci',
+      'virtserialport,chardev=spicechannel0,name=com.redhat.spice.0'
+    ],
+    'chardev': 'spicevmc,id=spicechannel0,name=vdagent'
   }
 } 
 
@@ -256,7 +264,7 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
-              'audio', 'drive', 'splash', 'name', 'mirror', 'huge' ],
+              'audio', 'drive', 'splash', 'name', 'mirror', 'huge', 'spice'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -269,7 +277,8 @@ qemu_model = [
   ['nohead', {
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
-              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge'],
+              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge',
+              'spice'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -349,6 +358,8 @@ def print_usage():
       '	user:none Do not provide a internet-visible network adapter',
       '	host:none Do not provide any host-only networks',
       '	mirror    Add 32M of shared memory for project looking glass',
+      '	spice     Open a spice connection at localhost:5900 (nohead, complex)',
+      '	spice:xx  Open a spice unix socket at file xx (nohead, complex)',
       '	m:ram     Set the amount of ram given to the OS (e.g. m:32G)',
       '	cd:img    mount image from the _img directory as a cdrom',
       '	dd:img    mount image from the _img directory as a disk',
@@ -397,14 +408,15 @@ def process_args(guest, args):
   smb = True
   mirror = False
   huge = False
+  spice = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
     if tail:
       if arg == 'vga:hack':
-	vgahack = 1
+        vgahack = 1
       elif arg == 'cpu:smt':
-	smt = 1
+        smt = 1
       elif arg == 'smb:none':
         smb = False
       elif arg == 'user:none':
@@ -415,31 +427,36 @@ def process_args(guest, args):
         nohost = True
         smb = False
       elif head == 'm':
-	memory = tail
+        memory = tail
       elif head == 'cd':
-	isos.append('img/'+tail)
+        isos.append('img/'+tail)
       elif head == 'dd':
-	imgs.append('img/'+tail)
+        imgs.append('img/'+tail)
       elif head == 'cdv':
-	isos.append('vm/{}/{}'.format(vm_name,tail))
+        isos.append('vm/{}/{}'.format(vm_name,tail))
       elif head == 'ddv':
-	imgs.append('vm/{}/{}'.format(vm_name,tail))
+        imgs.append('vm/{}/{}'.format(vm_name,tail))
       elif head == 'cdg':
-	isos.append(tail)
+        isos.append(tail)
       elif head == 'ddg':
-	imgs.append(tail)
+        imgs.append(tail)
       elif head == 'usb1':
-	usbs1.append(tail)
+        usbs1.append(tail)
       elif head == 'usb2':
-	usbs2.append(tail)
+        usbs2.append(tail)
       elif head == 'c':
-	cores = int(tail)
+        cores = int(tail)
+      elif head == 'spice':
+        spice = True
+        qemu_parts['spice']['spice'] = 'unix,addr={},disable-ticketing'.format(tail)
     elif arg == 'barf':
       qemu_parts['emu']['no-acpi'] = ''
     elif arg == 'mirror':
       mirror = True
     elif arg == 'huge':
       huge = True
+    elif arg == 'spice':
+      spice = True
   if not vgahack:
     qemu_parts['vgahack'] = {}
   if not mirror:
@@ -447,6 +464,8 @@ def process_args(guest, args):
   else:
     Popen(['touch', '/dev/shm/looking-glass']).wait()
     Popen(['chmod', '666', '/dev/shm/looking-glass']).wait()
+  if not spice:
+    qemu_parts['spice'] = {}
   if not smt:
     qemu_parts['cpu2']['smp'] = 'cores={}'.format(cores)
   else:
