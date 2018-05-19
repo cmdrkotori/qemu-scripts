@@ -54,8 +54,6 @@ def hostnet_up():
   dnsmasq = Popen(['sudo', 'dnsmasq', '-k',
                    '--interface=br0', '--bind-interfaces',
 		   '--dhcp-range=192.168.101.10,192.168.101.254'])
-  if smb:
-    smbd = Popen(['sudo', 'smbd', '-D', '-i', '-F', '-S', '-s', 'conf/smb.conf'])
   
 def hostnet_down():
   global nohost
@@ -66,8 +64,6 @@ def hostnet_down():
   
   # kill daemons politely
   call(['sudo', 'kill', str(-15), str(dnsmasq.pid)])
-  if smb:
-    call(['sudo', 'kill', str(-15), str(smbd.pid)])
 
   # remove taps from bridge
   call(['sudo', 'brctl', 'delif', 'br0', 'tap0'])
@@ -114,12 +110,12 @@ qemu_parts = {
 # ^^ virtio
   },
   'usernet1': {
-    'netdev': 'user,id=usernet',
+    'netdev': 'user,id=usernet{}',
 #    'net': 'nic,model=e1000,macaddr=52:54:ad:47:98:03,netdev=usernet'
     'net': 'nic,model=e1000,macaddr={},netdev=usernet'
   },
   'usernet2': {
-    'netdev': 'user,id=usernet',
+    'netdev': 'user,id=usernet{}',
 #    'net': 'nic,model=virtio,macaddr=52:54:ad:47:98:03,netdev=usernet'
     'net': 'nic,model=virtio,macaddr={},netdev=usernet'
 ## ^^ virtio
@@ -475,6 +471,13 @@ def process_args(guest, args):
   else:
     qemu_parts['huge']['object'] = qemu_parts['huge']['object'].format(memory)
   qemu_parts['memory']['m'] = memory
+
+  smbpath = os.path.realpath('./share')
+  smbtext = ',smb={}'.format(smbpath) if smb else ''
+  qemu_parts['usernet1']['netdev'] = \
+    qemu_parts['usernet1']['netdev'].format(smbtext)
+  qemu_parts['usernet2']['netdev'] = \
+    qemu_parts['usernet2']['netdev'].format(smbtext)
   
   # build a list of drives for the vm
   drives = qemu_model_drive['drive']
