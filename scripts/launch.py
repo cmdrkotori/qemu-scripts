@@ -445,6 +445,8 @@ def process_args(guest, args):
       elif head == 'spice':
         spice = True
         qemu_parts['spice']['spice'] = 'unix,addr={},disable-ticketing'.format(tail)
+        Popen(['touch', tail]).wait()
+        Popen(['chmod', '777', tail]).wait()
     elif arg == 'barf':
       qemu_parts['emu']['no-acpi'] = ''
     elif arg == 'mirror':
@@ -549,7 +551,8 @@ def do_launch(guest, args):
   my_env = os.environ
   if 'DISPLAY' not in my_env:
     my_env['DISPLAY'] = ':0'	# spoof running X in case we're in a tty
-  my_env['QEMU_AUDIO_DRV'] = 'alsa'
+  if 'QEMU_AUDIO_DRV' not in my_env:
+    my_env['QEMU_AUDIO_DRV'] = 'pa'
 
   # perform pre scripts
   if 'pre' in model:
@@ -575,7 +578,7 @@ def do_launch(guest, args):
   qemu_command = ' '.join([qemu_binary] + qemu_args).split()
   print 'Launching:\n\t' + qemu_binary + ' \\\n\t  ' + \
         ' \\\n\t  '.join(qemu_args) + '\n'
-  vm = Popen(['sudo'] + qemu_command, env=my_env)
+  vm = Popen(['sudo', '-E'] + qemu_command, env=my_env)
   print 'FOR WHAT PURPOSE: ' + model['purpose']
   vm.wait()
 
