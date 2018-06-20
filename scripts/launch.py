@@ -2,6 +2,7 @@
 import sys
 import os
 from subprocess import Popen, call
+from time import sleep
 import itertools
 import conf
 import mounting
@@ -10,6 +11,8 @@ dnsmasq = None
 smbd = None
 smb = True
 nohost = False
+mirror = False 
+spice = False
 
 host_conf = {}
 guest_conf = {}
@@ -382,6 +385,8 @@ def print_usage():
 # rather than cmdline args
 def process_args(guest, args):
   global smb
+  global mirror
+  global spice
   # check for too few arguments
   if not args or len(args) < 1:
     print_usage()
@@ -402,9 +407,9 @@ def process_args(guest, args):
   cores = 4
   smt = 0
   smb = True
-  mirror = False
   huge = False
   spice = False
+  mirror = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -461,7 +466,6 @@ def process_args(guest, args):
     qemu_parts['mirror'] = {}
   else:
     Popen(['touch', '/dev/shm/looking-glass']).wait()
-    Popen(['chmod', '666', '/dev/shm/looking-glass']).wait()
   if not spice:
     qemu_parts['spice'] = {}
   if not smt:
@@ -536,6 +540,9 @@ def wire_config_into_parts(guest):
 # - better integration with caller script
 
 def do_launch(guest, args):
+  global mirror
+  global spice
+
   # check for boot splash -- remove detail entry in parts list if not there
   if not os.path.exists('splash/boot.jpg'):
     qemu_parts['boot'] = {}
@@ -580,6 +587,15 @@ def do_launch(guest, args):
         ' \\\n\t  '.join(qemu_args) + '\n'
   vm = Popen(['sudo', '-E'] + qemu_command, env=my_env)
   print 'FOR WHAT PURPOSE: ' + model['purpose']
+  lg = None
+  if mirror:
+    sleep(1)
+    args = ['looking-glass-client', '-a', '-o', 'opengl:amdPinnedMem=0', '-d', '-x', '0', '-y', '0']
+    if spice:
+      args.extend(['-p', '0', '-c' '/tmp/looking-glass.socket'])
+    else:
+      args.append('-s')
+    lg = Popen(args)
   vm.wait()
 
   # perform post scripts
