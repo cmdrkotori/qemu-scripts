@@ -136,6 +136,12 @@ qemu_parts = {
   'usbdev': {
     'device': [ ]
   },
+  'virtio': {
+    'device': [
+      'virtio-keyboard-pci',
+      'virtio-mouse-pci'
+    ]
+  },
   'vga1': {
     'vga': 'std'
   },
@@ -202,7 +208,7 @@ qemu_drives = {
     ]
   },
   'virtio': {
-    'cdrom': 'scsi',
+    'cdrom': 'ide',
     'disks': 'virtio',
     'drive': [
       'if=virtio,file=vm/{}/disk.img,media=disk'
@@ -263,7 +269,8 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
-              'audio', 'drive', 'splash', 'name', 'mirror', 'huge', 'spice'],
+              'audio', 'drive', 'splash', 'name', 'mirror', 'huge', 'spice',
+              'virtio'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -277,7 +284,7 @@ qemu_model = [
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
               'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge',
-              'spice'],
+              'spice', 'virtio'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
