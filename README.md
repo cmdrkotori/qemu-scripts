@@ -12,10 +12,9 @@ direction.
 
 ## Prerequisites
 
-* Python 2.7
+* Python 3
 * qemu-system-x86
 * bridge-utils
-* samba (for sharing files with Windows hosts)
 * Synergy (optional, run that yourself.)
 
 ## Setup
@@ -87,10 +86,7 @@ prompts.
 * Use a bridged adapter for internet access instead of usermode networking,
 which will let you print from your VM. (currently I print to pdf and print
 that from the host.)
-* Code needs rework.  This was my first non-trivial python undertaking and it
-probably shows that specifically my python knowledge is self-taught.
-* Make Network Manager not drop VPN-related rules when vm is launched with an
-active VPN connection. (not my bug)
+* Mac support
 
 [Youtube video]:https://www.youtube.com/watch?v=37D2bRsthfI
 [Archlinux thread]:https://bbs.archlinux.org/viewtopic.php?id=162768
