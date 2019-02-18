@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # arch.py - Architecture-specific functions for dealing with conf files
 # Licensed under GPLv2.
 
@@ -75,9 +75,9 @@ def detect():
   for key in keys_to_try:
     if key in conf:
       release = conf[key]
-      if arches.has_key(release):
-	arch = arches[release]
-	return release
+      if release in arches:
+        arch = arches[release]
+        return release
   return {}
 
 
@@ -90,7 +90,7 @@ def inline_add(fname, parms):
     parms = [parms]
   for i in parms:
     c[i] = True
-  out = '\n'.join([i for i in c.keys()])
+  out = '\n'.join([i for i in list(c.keys())])
   with open(fname, 'w') as f:
     f.write(out)
 
@@ -110,17 +110,17 @@ def inline_key_value_add(fname, var, key_values):
       d = d[1].split(' ') if d[1] else []
       d = [i.split('=') if i.count('=') else [i,None] for i in d]
       d = OrderedDict(d)
-      for key,values in key_values.items():
-	e = d[key] if key in d else ''
-	if not values:
-	  d[key] = values
-	else:
-	  if type(values) is not list:
-	    values = [values]
-	  e = e.split(',') + values
-	  d[key] = ','.join([i for i in set(e)])
-      d = ' '.join(['{}={}'.format(k,v) if v else k for k,v in d.items()])
-      out.append('{}=\"{}\"'.format(var, d))
+      for key,values in list(key_values.items()):
+        e = d[key] if key in d else ''
+        if not values:
+          d[key] = values
+        else:
+          if type(values) is not list:
+            values = [values]
+          e = e.split(',') + values
+          d[key] = ','.join([i for i in set(e)])
+      d = ' '.join([f'{k}={v}' if v else k for k,v in list(d.items())])
+      out.append(f'{var}=\"{d}\"')
     else:
       out.append(c)
   with open(fname, 'w') as f:
@@ -135,7 +135,7 @@ def inline_parm_add(fname, var, parms):
 
 def install_module_initramfs(modules):
   if not arch:
-    print str_unknown
+    print(str_unknown)
     return None
   mod_info = arch['modules']
   if 'var' in mod_info:
@@ -145,7 +145,7 @@ def install_module_initramfs(modules):
   return mod_info['loc']
 
 def install_module_note(module, note):
-  fname = ''.join(['/etc/modprobe.d/', module, '.conf'])
+  fname = f'/etc/modprobe.d/{module}/.conf'
   inline_add(fname, note)
   return fname
 
@@ -155,7 +155,7 @@ def update_initramfs():
 
 def install_grub_options(options):
   if not arch:
-    print str_unknown
+    print(str_unknown)
     return None
   grub_info = arch['grub']
   inline_key_value_add(grub_info['loc'], grub_info['var'], options)

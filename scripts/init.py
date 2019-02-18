@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import os
 import platform
-import ConfigParser
+import configparser
 from subprocess import Popen, call,PIPE
 from collections import OrderedDict
-import arch, netinfo, network, conf
+from . import arch, netinfo, network, conf
 
 
 str_description = '''
@@ -213,8 +213,8 @@ files_modified = []
 ## HELPER FUNCTIONS
 
 def proceed():
-  x = raw_input('Do you want to proceed? (y/n): ')
-  print ''
+  x = input('Do you want to proceed? (y/n): ')
+  print('')
   return x == 'y'
 
 
@@ -285,21 +285,21 @@ def look_for_procs(stanza):
 ## PROGRAM FLOW FUNCTIONS
 
 def print_description():
-  print str_description
+  print(str_description)
 
 def chown_user(fname):
   username = detect_username()
   call(['chown', '{}:{}'.format(username,username), fname])
 
 def create_dirs(dirs):
-  print 'Creating directories...'
+  print('Creating directories...')
   username = detect_username()
   for d in dirs:
     if not os.path.exists(d):
-      print 'Creating {}'.format(d)
+      print('Creating {}'.format(d))
       call(['mkdir', d])
       chown_user(d)
-  print 'Directories are created.\n'
+  print('Directories are created.\n')
 
 def detect_username():
   try:
@@ -309,9 +309,9 @@ def detect_username():
   return username
 
 def setup_samba():
-  print str_samba
+  print(str_samba)
   username = detect_username()
-  print str_detected_user.format(username)
+  print(str_detected_user.format(username))
   
   conf = str_smb_conf.format('qemuhost', os.path.realpath('share'), username)
   
@@ -321,31 +321,31 @@ def setup_samba():
   with open('conf/smb.conf', 'wb') as f:
     f.write(conf)
     chown_user('conf/smb.conf')
-  print 'Host-only samba configuration written.\n'
+  print('Host-only samba configuration written.\n')
 
 
 def print_passthrough_warning():
-  print str_passthrough
+  print(str_passthrough)
 
   
 def select_vga():
-  print str_vga
+  print(str_vga)
   p1 = Popen('lspci', stdout=PIPE)
   p2 = Popen(['grep', 'VGA'], stdin=p1.stdout, stdout=PIPE)
   vgas = p2.communicate()[0].splitlines()
   if len(vgas) <= 1:
-    print 'WARNING: You do not seem to have a secondary vga adapter.'
+    print('WARNING: You do not seem to have a secondary vga adapter.')
   else:
-    print 'Your 2nd GPU appears to be at', vgas[-1].split(' ')[0]
-  print 'Select your secondary vga adapter.\n'\
-    '0) None'
+    print('Your 2nd GPU appears to be at', vgas[-1].split(' ')[0])
+  print('Select your secondary vga adapter.\n'\
+    '0) None')
   i = 1
   for vga in vgas:
-    print '{}) {}'.format(i,vga)
+    print('{}) {}'.format(i,vga))
     i = i + 1
   try:
-    device = int(raw_input('Enter choice: '))
-    print ''
+    device = int(input('Enter choice: '))
+    print('')
     if device <= 0:
       raise Exception()
     pci_id = vgas[device-1].split()[0]
@@ -365,18 +365,18 @@ def detect_init_system():
 
 # install the init script, from detecting init to writing the service
 def install_vfio_bind_service(pci_cards):
-  print ''
+  print('')
   init_system = detect_init_system()
   if 'warning1' in init_system[1]:
-    print init_system[1]['warning1']
+    print(init_system[1]['warning1'])
     if not proceed():
-      print 'Not proceeding further.  Cleaning up.'
+      print('Not proceeding further.  Cleaning up.')
       call(['rm', vfio_bind_location])
       exit(0)
   else:
-    print 'Detected init system {}.'.format(init_system[0])
+    print('Detected init system {}.'.format(init_system[0]))
 
-  print 'Vfio-devices: {}'.format(' '.join(pci_cards))
+  print('Vfio-devices: {}'.format(' '.join(pci_cards)))
   d = os.path.dirname(init_system[1]['location'])
   if not os.path.exists(d):
       os.makedirs(d)
@@ -385,10 +385,10 @@ def install_vfio_bind_service(pci_cards):
   files_modified.append(init_system[1]['location'])
   if 'postinstall' in init_system[1]:
       call(init_system[1]['postinstall'])
-  print 'Init service written.  To add/remove devices, edit:\n'\
-    '\t{}.'.format(init_system[1]['location'])
+  print('Init service written.  To add/remove devices, edit:\n'\
+    '\t{}.'.format(init_system[1]['location']))
   if 'warning2' in init_system[1]:
-    print init_system[1]['warning2']
+    print(init_system[1]['warning2'])
 
 
 def install_vfio_bind_script():
@@ -396,11 +396,11 @@ def install_vfio_bind_script():
     f.write(str_vfio_bind)
   call(['sudo', 'chmod', 'u+x', vfio_bind_location])
   files_modified.append(vfio_bind_location)
-  print 'Vfio-bind script written.\n'
+  print('Vfio-bind script written.\n')
 
 
 def install_modules():
-  print str_modules
+  print(str_modules)
   files_modified.append(arch.install_module_initramfs(['pci-stub']))
   files_modified.append(arch.install_module_note('drm', 'softdep drm pre: pci-stub'))
   arch.update_initramfs()
@@ -408,15 +408,15 @@ def install_modules():
 def install_grub(pci_stub_ids):
   psi = 'pci-stub.ids'
   stanza = '{}={}'.format(psi, ','.join(pci_stub_ids))
-  print str_grub.format(stanza)
+  print(str_grub.format(stanza))
   if not proceed():
     return
   files_modified.append(arch.install_grub_options({ psi: pci_stub_ids }))
-  print '\nGrub config written.\n'
+  print('\nGrub config written.\n')
   
 
 def write_host_conf(pci_stub_devices = None):
-  print str_network
+  print(str_network)
   phys, addr, mask, bcast, gw = netinfo.phys_addr_bcast_gw()
   cfg = conf.read_host_conf(False)
   cfg['net'] = { 'phys': phys, 'addr': addr, 'mask': mask, 'bcast': bcast,
@@ -432,9 +432,9 @@ def write_host_conf(pci_stub_devices = None):
 
 
 def print_files_modified():
-  print '\nFiles modified:'
+  print('\nFiles modified:')
   for i in files_modified:
-    print '\t{}'.format(i)
+    print('\t{}'.format(i))
 
 
 def do_init():
@@ -447,15 +447,15 @@ def do_init():
   print_passthrough_warning()
   if not proceed():
     pci_stub_devices = None
-    print str_nopass
+    print(str_nopass)
   else:
     pci_id = select_vga()
     if pci_id:
       pci_cards, pci_stub_devices = pci_id_to_cards(pci_id)
       if len(pci_cards) == 0:
-	print 'A fatal loss of information has occurred. (Did '\
-	  'sysfs change?)'
-	exit(1)
+        print('A fatal loss of information has occurred. (Did '\
+              'sysfs change?)')
+        exit(1)
       install_vfio_bind_service(pci_cards)
       install_vfio_bind_script()
       install_modules()
@@ -463,8 +463,8 @@ def do_init():
   write_host_conf(pci_stub_devices)
   print_files_modified()
   if pci_stub_devices:
-    print '\n\nYou should reboot your system for the changes to '\
-	  'take effect.\n'
+    print('\n\nYou should reboot your system for the changes to '\
+          'take effect.\n')
       
 if __name__ == '__main__':
   do_init();

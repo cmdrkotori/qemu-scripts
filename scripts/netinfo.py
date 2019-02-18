@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 from subprocess import Popen, call, PIPE
 import os, socket, struct
 
@@ -30,7 +30,7 @@ def get_gateways_for_device(phys):
     for line in f:
       fields = line.strip().split()
       if fields[0] == phys:
-	gw.append(socket.inet_ntoa(struct.pack('<L', int(fields[2], 16))))
+        gw.append(socket.inet_ntoa(struct.pack('<L', int(fields[2], 16))))
   return gw
 
 
@@ -40,12 +40,12 @@ def get_arps_from_device(phys, gws):
     for line in f:
       fields = line.strip().split()
       if fields[-1] == phys and fields[0] in gws:
-	arps.append(fields[0])
+        arps.append(fields[0])
   return arps
 
 def phys_gw():
   p1 = Popen(['find', '/sys/devices/pci0000:00', '-name', 'net'],
-	     stdout=PIPE)
+             stdout=PIPE)
   netdevs = p1.communicate()[0]
   devs = [name for d in netdevs.splitlines() for name in os.listdir(d)]
   if len(devs) == 0:

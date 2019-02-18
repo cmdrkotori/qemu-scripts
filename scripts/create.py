@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 import os, sys
 from subprocess import Popen, call, PIPE
-import conf, network
+from . import conf, network
 
 str_enter_size = '''
 Enter the size of your virtual machine.  The disk image is
@@ -60,18 +61,18 @@ def xrandr_select():
   selected = []
   possible, descriptions = xrandr_enumerate()
 
-  print str_xrandr_set
+  print(str_xrandr_set)
   
   while (True):
-    print str_xrandr_select
+    print(str_xrandr_select)
     index = 0
     for display in possible:
       star = '*' if display in selected else ' '
-      print '{} {}. {} {}'.format(star, str(index), display, 
-        descriptions[index])
+      print('{} {}. {} {}'.format(star, str(index), display, 
+        descriptions[index]))
       index += 1
-    print '  2. Done'
-    choice = int(raw_input(str_select_prompt))
+    print('  2. Done')
+    choice = int(input(str_select_prompt))
     if choice == 2:
       break
     if possible[choice] in selected:
@@ -80,7 +81,7 @@ def xrandr_select():
       selected.append(possible[choice])
   
   selected_text = '\n    '.join(selected) if selected else 'None'
-  print str_xrandr_done.format(selected_text)
+  print(str_xrandr_done.format(selected_text))
   return selected
 
 def create(name):
@@ -88,14 +89,14 @@ def create(name):
   if not os.path.exists(vm_dir):
     call(['mkdir', '-p', vm_dir])
 
-  print str_enter_size
-  size = raw_input(str_size_prompt)
+  print(str_enter_size)
+  size = input(str_size_prompt)
   
-  if call(['qemu-img', 'create', '-f', 'qcow2', vm_dir + '/' + 'disk.img',
+  if call(['qemu-img', 'create', '-f', 'qcow2', f'{vm_dir}/disk.img',
            size]):
-    print str_image_not_done
+    print(str_image_not_done)
   else:
-    print str_image_done
+    print(str_image_done)
   
   config = {}
   config['mac'] = {'hostnet': network.gen_mac(), 'usernet': network.gen_mac()}
@@ -104,4 +105,4 @@ def create(name):
   config['xrandr'] = [{'output': output, 'location':[]}
                       for output in selected]  
   if conf.write_guest_conf(name, config):
-    print str_done
+    print(str_done)

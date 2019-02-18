@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import json, os
 
 fn_host_conf = 'conf/host.json'
@@ -11,7 +11,7 @@ def get_conf(fname, write_error = True):
       return json.load(jsonfile)
   except:
     if write_error:
-      print('Unable to read {}!'.format(fname))
+      print(f'Unable to read {fname}!')
       print('Perhaps there is a syntax or permissions issue.')
     return {}
 
@@ -23,8 +23,7 @@ def set_conf(fname, opts):
         json.dump(opts, jsonfile, indent=4, sort_keys=True)
     return fname
   except:
-    print('Could not write to {}! Perhaps there is a permissions problem.'.
-          format(fname))
+    print(f'Could not write to {fname}! Perhaps there is a permissions problem.')
     return None
 
 def read_host_conf(write_error = True):
@@ -42,4 +41,4 @@ def write_guest_conf(vmname, opts):
 if __name__=='__main__':
   #print read_host_conf()
   #print json.dumps(read_host_conf(), indent=4, sort_keys=True)
-  print json.dumps(read_guest_conf('win7'), indent=4, sort_keys=True)
+  print(json.dumps(read_guest_conf('win7'), indent=4, sort_keys=True))

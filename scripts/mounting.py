@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 from subprocess import call
 
@@ -12,7 +13,7 @@ def perform(mount_dict):
       if os.path.ismount(where):
         call( [ 'sudo', 'umount', where ] )
     call( [ 'sudo', 'mount', '--bind', what, where ] )
-    print ''.join(['Mounted ', value, ' to ', key])
+    print(f'Mounted {value} to {key}')
 
 def is_mount_in_mtab(mount):
   with open('/etc/mtab', 'r') as f:

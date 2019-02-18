@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import sys
 import os
 from subprocess import Popen, call
 from time import sleep
 import itertools
-import conf
-import mounting
+from . import conf
+from . import mounting
 
 dnsmasq = None
 smbd = None
@@ -244,7 +244,7 @@ qemu_model = [
     'memory': '2G'
   }],
   ['virtio', {
-    'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet2',
+    'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'usernet2',
               'hostnet', 'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
     'drives': 'virtio',
     'desc': 'As above with a virtio host-only network and virtio disks',
@@ -308,15 +308,15 @@ def build_opts_single(opts):
 
 def build_opts_multi(opts,fill=''):
   out = []
-  for k,v in opts.iteritems():
+  for k,v in opts.items():
     if type(v) == str:
       if v:
-	out.append('-{} {}'.format(k,v))
+        out.append('-{} {}'.format(k,v))
       else:
         out.append('-{}'.format(k))
     else:
       for u in v:
-	out.append('-{} {}'.format(k,u.format(fill)))
+        out.append('-{} {}'.format(k,u.format(fill)))
   return out
 
 
@@ -336,7 +336,7 @@ def check_for_model(make):
     qemu_model_drive = qemu_drives[model['drives']]
     qemu_model_drive['model'] = model
   else:
-    print 'We don\'t make that build :('
+    print('We don\'t make that build :(')
     exit(1)
 
 def print_usage():
@@ -386,7 +386,7 @@ def print_usage():
       '\t' + sys.argv[0] + ' nohead coinminer',
       ''
     ]
-    print '\n'.join(usage)
+    print('\n'.join(usage))
 
 ## TODO: Every arg in this function should come from a conf file
 # rather than cmdline args
@@ -500,11 +500,11 @@ def process_args(guest, args):
   for img in imgs:
     if img:
       drives.append('if={},file={},media=disk'.
-		    format(disk_mode,img))
+                    format(disk_mode,img))
   for iso in isos:
     if iso:
       drives.append('if={},file={},media=cdrom'.
-		    format(cdrom_mode,iso))
+                    format(cdrom_mode,iso))
 
   # build a list usbdevices for the vm
   usbdevices = []
@@ -590,10 +590,10 @@ def do_launch(guest, args):
   # run the vm
   qemu_binary = 'qemu-system-x86_64'
   qemu_command = ' '.join([qemu_binary] + qemu_args).split()
-  print 'Launching:\n\t' + qemu_binary + ' \\\n\t  ' + \
-        ' \\\n\t  '.join(qemu_args) + '\n'
+  print('Launching:\n\t' + qemu_binary + ' \\\n\t  ' + \
+        ' \\\n\t  '.join(qemu_args) + '\n')
   vm = Popen(['sudo', '-E'] + qemu_command, env=my_env)
-  print 'FOR WHAT PURPOSE: ' + model['purpose']
+  print('FOR WHAT PURPOSE: ' + model['purpose'])
   lg = None
   if mirror:
     sleep(1)
