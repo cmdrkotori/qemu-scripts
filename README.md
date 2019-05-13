@@ -74,21 +74,27 @@ fact, no virtual machine is.
 You may have to edit the odd config file or two after you created your vm.
 The xrandr statements if you have any will need editing, for example.
 
-Windows VMs will need to compile [Synergy]. (good luck.)  Or you can donate
-to its developers and have them provide you with a Windows installer.
+Windows VMs may need to compile [Synergy] (good luck), or you can donate
+to its developers and have them provide you with a Windows installer.  You
+can also use [looking-glass] which provides lower-latency and framebuffer
+passthrough.  Looking Glass's spice server works even when framebuffer
+passthrough does not, i.e. mouse + keyboard control even at the bios and on
+"unsupported" operating system.
 
 Try the vga:hack flag if you having trouble getting your video card working.
 You may want to keep it around anyway so you can click through superuser
-prompts.
+prompts in the case of you using Synergy.
 
 ## TODO
 
 * Use a bridged adapter for internet access instead of usermode networking,
 which will let you print from your VM. (currently I print to pdf and print
 that from the host.)
-* Mac support
+* Mac support ([mac gist])
 
 [Youtube video]:https://www.youtube.com/watch?v=37D2bRsthfI
 [Archlinux thread]:https://bbs.archlinux.org/viewtopic.php?id=162768
 [virtio drivers]:http://www.linux-kvm.org/page/WindowsGuestDrivers/Download_Drivers
 [synergy]:http://synergy-project.org/
+[looking-glass]:https://looking-glass.hostfission.com/
+[mac gist]:https://gist.github.com/cmdrkotori/4a68992e80d32bd396c177d0c57dd5e6
