@@ -87,6 +87,9 @@ qemu_parts = {
     'display': 'none',
     'enable-kvm': ''
   },
+  'rtc': {
+    'rtc': 'base=localtime'
+  },
   'cpu1': {
     'cpu': 'host,hv-time,kvm=off'
   },
@@ -220,7 +223,7 @@ qemu_drives = {
 qemu_model = [
   ['archaic', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'moboisa', 'vga1', 'drive',
-              'splash', 'name' ],
+              'splash', 'name', 'rtc' ],
     'drives': 'ide1',
     'desc': 'ISA-only system with no ethernet',
     'purpose': 'To run really ancient systems',
@@ -228,7 +231,7 @@ qemu_model = [
   }],
   ['basic', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet1',
-              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
+              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name', 'rtc'],
     'drives': 'ide1',
     'desc': 'PCI-based system with 1G of ram and a PIIX chipset',
     'purpose': 'You should install your OS and get your virtio drivers '
@@ -237,7 +240,7 @@ qemu_model = [
   }],
   ['simple', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobopc', 'vga1', 'usernet1',
-              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
+              'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name', 'rtc'],
     'drives': 'ide2',
     'desc': 'As above with a dummy virtio disk',
     'purpose': 'Teach your OS about virtio disks.',
@@ -245,7 +248,8 @@ qemu_model = [
   }],
   ['virtio', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'usernet2',
-              'hostnet', 'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name'],
+              'hostnet', 'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name',
+              'rtc'],
     'drives': 'virtio',
     'desc': 'As above with a virtio host-only network and virtio disks',
     'purpose': 'Teach your OS about virtio network adapters and '
@@ -257,7 +261,7 @@ qemu_model = [
   ['modern', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'audio', 'drive',
-              'splash', 'name', 'mirror'],
+              'splash', 'name', 'mirror', 'rtc'],
     'drives': 'virtio',
     'desc': 'q35/virtio system, 8G of ram, host-only networking, and audio',
     'purpose': 'Teach your system about the q35 architechture.\n'
@@ -270,7 +274,7 @@ qemu_model = [
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
               'audio', 'drive', 'splash', 'name', 'mirror', 'huge', 'spice',
-              'virtio'],
+              'virtio', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -284,7 +288,7 @@ qemu_model = [
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
               'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge',
-              'spice', 'virtio'],
+              'spice', 'virtio', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
