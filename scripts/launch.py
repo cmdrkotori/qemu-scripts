@@ -630,3 +630,4 @@ def do_launch(guest, args):
     if xrandr_opts:
       Popen(['xrandr'] + xrandr_opts, env=my_env).wait()
 
+  Popen(['kdialog', '--msgbox', f'Virtual machine {guest} has shutdown.'], env=my_env).wait()
