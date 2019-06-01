@@ -91,7 +91,7 @@ qemu_parts = {
     'rtc': 'base=localtime'
   },
   'cpu1': {
-    'cpu': 'host,hv-time,kvm=off'
+    'cpu': 'host,hv-time,kvm={},+topoext'
   },
   'cpu2': {
     'smp': '4,cores=4'
@@ -417,6 +417,7 @@ def process_args(guest, args):
   vgahack = 0
   cores = 4
   smt = 0
+  kvm = 'off'
   smb = True
   huge = False
   spice = False
@@ -438,6 +439,8 @@ def process_args(guest, args):
         qemu_parts['hostnet'] = {}
         nohost = True
         smb = False
+      elif head == 'kvm':
+        kvm = tail
       elif head == 'm':
         memory = tail
       elif head == 'cd':
@@ -488,7 +491,7 @@ def process_args(guest, args):
   else:
     qemu_parts['huge']['object'] = qemu_parts['huge']['object'].format(memory)
   qemu_parts['memory']['m'] = memory
-
+  qemu_parts['cpu1']['cpu'] = qemu_parts['cpu1']['cpu'].format(kvm)
   smbpath = os.path.realpath('./share')
   smbtext = ',smb={}'.format(smbpath) if smb else ''
   qemu_parts['usernet1']['netdev'] = \
@@ -601,11 +604,11 @@ def do_launch(guest, args):
   lg = None
   if mirror:
     sleep(1)
-    args = ['looking-glass-client', '-a', '-o', 'opengl:amdPinnedMem=0', '-d', '-x', '0', '-y', '0']
+    args = ['looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes']
     if spice:
-      args.extend(['-p', '0', '-c' '/tmp/looking-glass.socket'])
+      args.extend(['spice:port=0', 'spice:host=/tmp/looking-glass.socket'])
     else:
-      args.append('-s')
+      args.append('spice:enable=no')
     lg = Popen(args)
   vm.wait()
 
