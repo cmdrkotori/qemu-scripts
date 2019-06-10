@@ -37,12 +37,12 @@ take up as much as it stores. (with a little overhead.)
 Perform any minor tweaking to its json config as needed, then run your
 virtual machine.
 
->./run.py win7 basic
+>sudo -E ./run.py win7 basic
 
 Or if you are brave, use the legacy script.  If you have a more exotic setup
 you may also want to edit this script to your liking instead.
 
->./launch.py win7 basic
+>sudo -E ./launch.py win7 basic
 
 ## Caveats
 
