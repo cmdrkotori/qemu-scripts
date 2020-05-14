@@ -97,4 +97,4 @@ that from the host.)
 [virtio drivers]:http://www.linux-kvm.org/page/WindowsGuestDrivers/Download_Drivers
 [synergy]:http://synergy-project.org/
 [looking-glass]:https://looking-glass.hostfission.com/
-[mac gist]:https://gist.github.com/cmdrkotori/4a68992e80d32bd396c177d0c57dd5e6
+[mac gist]:https://gist.github.com/cmdrkotori/d4f78cd814e185b820b19f938392d58a
