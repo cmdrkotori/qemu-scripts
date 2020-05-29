@@ -13,6 +13,7 @@ smb = True
 nohost = False
 mirror = False 
 spice = False
+scream = False
 
 host_conf = {}
 guest_conf = {}
@@ -178,8 +179,12 @@ qemu_parts = {
     'name': ''
   },
   'mirror': {
-    'device': 'ivshmem-plain,memdev=ivshmem',
-    'object': 'memory-backend-file,id=ivshmem,share=on,mem-path=/dev/shm/looking-glass,size=32M'
+    'device': 'ivshmem-plain,memdev=lg_ivshmem',
+    'object': 'memory-backend-file,id=lg_ivshmem,share=on,mem-path=/dev/shm/looking-glass,size=32M'
+  },
+  'scream': {
+    'device': 'ivshmem-plain,memdev=sc_ivshmem',
+    'object': 'memory-backend-file,id=sc_ivshmem,share=on,mem-path=/dev/shm/scream,size=2M'
   },
   'huge': {
     'object': 'memory-backend-file,id=mem,size={},mem-path=/hugetlbfs,share=on'
@@ -192,7 +197,18 @@ qemu_parts = {
     ],
     'chardev': 'spicevmc,id=spicechannel0,name=vdagent'
   }
-} 
+}
+
+audio_cards = {
+  'ich9': [ 'ich9-intel-hda', 'hda-micro' ],
+  'ich6': [ 'intel-hda', 'hda-micro' ],
+  'ac97': [ 'AC97' ],
+  'crys': [ 'cs4231a' ],
+  'eson': [ 'ES1370' ],
+  'sb16': [ 'sb16' ],
+  'usba': [ 'usb-audio,bus=usb-bus.0' ],
+  'none': []  
+}
 
 qemu_drives = {
   'ide1': {
@@ -273,8 +289,8 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
-              'audio', 'drive', 'splash', 'name', 'mirror', 'huge', 'spice',
-              'virtio', 'rtc'],
+              'audio', 'drive', 'splash', 'name', 'mirror', 'scream', 'huge',
+              'spice', 'virtio', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -287,8 +303,8 @@ qemu_model = [
   ['nohead', {
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
-              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'huge',
-              'spice', 'virtio', 'rtc'],
+              'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'scream',
+              'huge', 'spice', 'virtio', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -347,7 +363,7 @@ def print_usage():
     usage=[
       'No build and name specified.',
       '',
-      'Usage:	sudo ' + sys.argv[0] + ' VMNAME MODEL [OPTIONS]',
+      f'Usage:	sudo -E {sys.argv[0]} VMNAME MODEL [OPTIONS]',
       '',
       'VMNAME	The directory name where the disk.img is',
       '',
@@ -397,6 +413,7 @@ def print_usage():
 def process_args(guest, args):
   global smb
   global mirror
+  global scream
   global spice
   # check for too few arguments
   if not args or len(args) < 1:
@@ -419,6 +436,7 @@ def process_args(guest, args):
   smt = 0
   kvm = 'off'
   smb = True
+  sound = 'ich9'
   huge = False
   spice = False
   mirror = False
@@ -439,6 +457,8 @@ def process_args(guest, args):
         qemu_parts['hostnet'] = {}
         nohost = True
         smb = False
+      elif head == 'snd' and tail in audio_cards:
+        sound = tail
       elif head == 'kvm':
         kvm = tail
       elif head == 'm':
@@ -470,6 +490,8 @@ def process_args(guest, args):
       qemu_parts['emu']['no-acpi'] = ''
     elif arg == 'mirror':
       mirror = True
+    elif arg == 'scream':
+      scream = True
     elif arg == 'huge':
       huge = True
     elif arg == 'spice':
@@ -480,6 +502,10 @@ def process_args(guest, args):
     qemu_parts['mirror'] = {}
   else:
     Popen(['touch', '/dev/shm/looking-glass']).wait()
+  if not scream:
+    qemu_paths['scream'] = {}
+  else:
+    Popen(['touch', '/dev/shm/scream']).wait()
   if not spice:
     qemu_parts['spice'] = {}
   if not smt:
@@ -490,6 +516,7 @@ def process_args(guest, args):
     qemu_parts['huge'] = {}
   else:
     qemu_parts['huge']['object'] = qemu_parts['huge']['object'].format(memory)
+  qemu_parts['audio']['device'] = audio_cards[sound]
   qemu_parts['memory']['m'] = memory
   qemu_parts['cpu1']['cpu'] = qemu_parts['cpu1']['cpu'].format(kvm)
   smbpath = os.path.realpath('./share')
@@ -602,14 +629,19 @@ def do_launch(guest, args):
   vm = Popen(['sudo', '-E'] + qemu_command, env=my_env)
   print('FOR WHAT PURPOSE: ' + model['purpose'])
   lg = None
+  sip = None
+  if mirror or scream:
+    sleep(2)
   if mirror:
-    sleep(1)
     args = ['looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes']
     if spice:
       args.extend(['spice:port=0', 'spice:host=/tmp/looking-glass.socket'])
     else:
       args.append('spice:enable=no')
     lg = Popen(args)
+  if scream:
+    args = ['sudo', '-E', '-u', '#1000', 'scream-ivshmem-pulse', '/dev/shm/scream']
+    sip = Popen(args)
   vm.wait()
 
   # perform post scripts

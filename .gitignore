@@ -9,3 +9,4 @@ share/
 *.json
 *.conf
 *.pid
+*.desktop
