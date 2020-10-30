@@ -502,6 +502,7 @@ def process_args(guest, args):
     qemu_parts['mirror'] = {}
   else:
     Popen(['touch', '/dev/shm/looking-glass']).wait()
+    Popen(['chmod', '777', '/dev/shm/looking-glass']).wait()
   if not scream:
     qemu_paths['scream'] = {}
   else:
@@ -633,8 +634,9 @@ def do_launch(guest, args):
   if mirror or scream:
     sleep(2)
   if mirror:
-    args = ['looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes']
+    args = ['sudo', '-E', '-u', '#1000', 'looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes']
     if spice:
+      Popen(['chmod', '777', '/tmp/looking-glass.socket']).wait()
       args.extend(['spice:port=0', 'spice:host=/tmp/looking-glass.socket'])
     else:
       args.append('spice:enable=no')
