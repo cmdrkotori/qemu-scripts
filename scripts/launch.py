@@ -166,7 +166,8 @@ qemu_parts = {
     'device': [
       'ich9-intel-hda',
       'hda-micro'
-    ]
+    ],
+    'audiodev': 'jack,id=audio1'
   },
   'drive': {
     'drive': [
@@ -200,8 +201,8 @@ qemu_parts = {
 }
 
 audio_cards = {
-  'ich9': [ 'ich9-intel-hda', 'hda-micro' ],
-  'ich6': [ 'intel-hda', 'hda-micro' ],
+  'ich9': [ 'ich9-intel-hda', 'hda-micro,audiodev=audio1' ],
+  'ich6': [ 'intel-hda', 'hda-micro,audiodev=audio1' ],
   'ac97': [ 'AC97' ],
   'crys': [ 'cs4231a' ],
   'eson': [ 'ES1370' ],
@@ -504,7 +505,7 @@ def process_args(guest, args):
     Popen(['touch', '/dev/shm/looking-glass']).wait()
     Popen(['chmod', '777', '/dev/shm/looking-glass']).wait()
   if not scream:
-    qemu_paths['scream'] = {}
+    qemu_parts['scream'] = {}
   else:
     Popen(['touch', '/dev/shm/scream']).wait()
   if not spice:
@@ -602,6 +603,8 @@ def do_launch(guest, args):
     my_env['DISPLAY'] = ':0'	# spoof running X in case we're in a tty
   if 'QEMU_AUDIO_DRV' not in my_env:
     my_env['QEMU_AUDIO_DRV'] = 'pa'
+  if 'QEMU_PA_SERVER' not in my_env:
+    my_env['QEMU_PA_SERVER'] = '/run/user/1000/pulse/native'
 
   # perform pre scripts
   if 'pre' in model:
@@ -642,7 +645,7 @@ def do_launch(guest, args):
       args.append('spice:enable=no')
     lg = Popen(args)
   if scream:
-    args = ['sudo', '-E', '-u', '#1000', 'scream-ivshmem-pulse', '/dev/shm/scream']
+    args = ['sudo', '-E', '-u', '#1000', 'scream', '-m', '/dev/shm/scream']
     sip = Popen(args)
   vm.wait()
 
