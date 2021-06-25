@@ -85,6 +85,19 @@ Try the vga:hack flag if you having trouble getting your video card working.
 You may want to keep it around anyway so you can click through superuser
 prompts in the case of you using Synergy.
 
+Windows 10's PC Health Check program requires that the emulated system supports
+UEFI and TPM2.  Adding the terms `uefi` and `tpm` to launch.py's argument list
+will load the required components into the virtual machine, with one exception:
+the uefi files OVMF_CODE.fd and OVMF_VARS.fd must be the secboot versions.  As
+of writing, they are not available in Arch's edk2-ovmf package (the bundled
+script in the ovmf directory will work but may not be what you want).  The
+secboot variants must be downloaded and extracted from [fedora's edk2-ovmf]
+package.  In addition, you may have to then have to disable secure boot in the
+BIOS menu to prevent a bootloop; it will still pass the secure boot check as
+the firmware only has to support secure boot even if it is not switched on.
+
+The `tpm` option requires that `swtpm` is installed on your system.
+
 ## TODO
 
 * Use a bridged adapter for internet access instead of usermode networking,
@@ -98,3 +111,4 @@ that from the host.)
 [synergy]:http://synergy-project.org/
 [looking-glass]:https://looking-glass.hostfission.com/
 [mac gist]:https://gist.github.com/cmdrkotori/d4f78cd814e185b820b19f938392d58a
+[fedora's edk2-ovmf]:https://rpmfind.net/linux/rpm2html/search.php?query=edk2-ovmf
