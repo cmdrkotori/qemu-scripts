@@ -14,6 +14,7 @@ nohost = False
 mirror = False 
 spice = False
 scream = False
+tpm = False
 
 host_conf = {}
 guest_conf = {}
@@ -203,6 +204,11 @@ qemu_parts = {
       'if=pflash,format=raw,readonly=on,file=uefi/OVMF_CODE.fd',
       'if=pflash,format=raw,file=uefi/OVMF_VARS.fd'
     ]
+  },
+  'tpm': {
+    'chardev': 'socket,id=chrtpm,path=tpm/tpm-sock',
+    'tpmdev': 'emulator,id=tpm0,chardev=chrtpm',
+    'device': 'tpm-tis,tpmdev=tpm0'
   }
 }
 
@@ -272,7 +278,7 @@ qemu_model = [
   ['virtio', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'usernet2',
               'hostnet', 'usb1', 'usb2', 'usbdev', 'uefi', 'drive', 'splash',
-              'name', 'rtc'],
+              'name', 'rtc', 'tpm'],
     'drives': 'virtio',
     'desc': 'As above with a virtio host-only network and virtio disks',
     'purpose': 'Teach your OS about virtio network adapters and '
@@ -284,7 +290,7 @@ qemu_model = [
   ['modern', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'audio', 'uefi', 'drive',
-              'splash', 'name', 'mirror', 'rtc'],
+              'splash', 'name', 'mirror', 'rtc', 'tpm'],
     'drives': 'virtio',
     'desc': 'q35/virtio system, 8G of ram, host-only networking, and audio',
     'purpose': 'Teach your system about the q35 architechture.\n'
@@ -297,7 +303,7 @@ qemu_model = [
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
               'audio', 'uefi', 'drive', 'splash', 'name', 'mirror', 'scream',
-              'huge', 'spice', 'virtio', 'rtc'],
+              'huge', 'spice', 'virtio', 'rtc', 'tpm'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -311,7 +317,7 @@ qemu_model = [
     'parts': ['emu-nohead', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2',
               'hostnet', 'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack',
               'vga3', 'audio', 'drive', 'splash', 'name', 'mirror', 'scream',
-              'huge', 'spice', 'virtio', 'rtc'],
+              'huge', 'spice', 'virtio', 'rtc', 'tpm'],
     'drives': 'virtio',
     'desc': 'As above but without a qemu window. You are on your own',
     'purpose': 'Enjoy your fully functional guest operating system.',
@@ -422,6 +428,7 @@ def process_args(guest, args):
   global mirror
   global scream
   global spice
+  global tpm
   # check for too few arguments
   if not args or len(args) < 1:
     print_usage()
@@ -448,6 +455,7 @@ def process_args(guest, args):
   spice = False
   mirror = False
   uefi = False
+  tpm = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -506,8 +514,12 @@ def process_args(guest, args):
       spice = True
     elif arg == 'uefi':
       uefi = True
+    elif arg == 'tpm':
+      tpm = True
   if not uefi:
     qemu_parts['uefi'] = {}
+  if not tpm:
+    qemu_parts['tpm'] = {}
   if not vgahack:
     qemu_parts['vgahack'] = {}
   if not mirror:
@@ -636,6 +648,10 @@ def do_launch(guest, args):
   if smb and 'smb' in host_conf:
     mounting.perform(host_conf['smb'])
 
+  if tpm:
+    tpm_process = Popen(['swtpm', 'socket', '--tpm2', '--tpmstate', 'dir=tpm', '--ctrl', 'type=unixio,path=tpm/tpm-sock', '--log' ,'level=20'])
+    sleep(1)
+    
   # run the vm
   qemu_binary = 'qemu-system-x86_64'
   qemu_command = ' '.join([qemu_binary] + qemu_args).split()
