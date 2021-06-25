@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp /usr/share/edk2-ovmf/x64/* .

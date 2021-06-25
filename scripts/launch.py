@@ -197,6 +197,12 @@ qemu_parts = {
       'virtserialport,chardev=spicechannel0,name=com.redhat.spice.0'
     ],
     'chardev': 'spicevmc,id=spicechannel0,name=vdagent'
+  },
+  'uefi': {
+    'drive': [
+      'if=pflash,format=raw,readonly=on,file=uefi/OVMF_CODE.fd',
+      'if=pflash,format=raw,file=uefi/OVMF_VARS.fd'
+    ]
   }
 }
 
@@ -265,8 +271,8 @@ qemu_model = [
   }],
   ['virtio', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'usernet2',
-              'hostnet', 'usb1', 'usb2', 'usbdev', 'drive', 'splash', 'name',
-              'rtc'],
+              'hostnet', 'usb1', 'usb2', 'usbdev', 'uefi', 'drive', 'splash',
+              'name', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above with a virtio host-only network and virtio disks',
     'purpose': 'Teach your OS about virtio network adapters and '
@@ -277,7 +283,7 @@ qemu_model = [
   }],
   ['modern', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga1', 'hostnet',
-              'usernet2', 'usb1', 'usb2', 'usbdev', 'audio', 'drive',
+              'usernet2', 'usb1', 'usb2', 'usbdev', 'audio', 'uefi', 'drive',
               'splash', 'name', 'mirror', 'rtc'],
     'drives': 'virtio',
     'desc': 'q35/virtio system, 8G of ram, host-only networking, and audio',
@@ -290,8 +296,8 @@ qemu_model = [
   ['complex', {
     'parts': ['emu', 'cpu1', 'cpu2', 'memory', 'mobo35', 'vga2', 'hostnet',
               'usernet2', 'usb1', 'usb2', 'usbdev', 'vgahack', 'vga3',
-              'audio', 'drive', 'splash', 'name', 'mirror', 'scream', 'huge',
-              'spice', 'virtio', 'rtc'],
+              'audio', 'uefi', 'drive', 'splash', 'name', 'mirror', 'scream',
+              'huge', 'spice', 'virtio', 'rtc'],
     'drives': 'virtio',
     'desc': 'As above with pcie-passthrough',
     'purpose': 'Play some games and blurays from the comfort of X/Wayland\n'
@@ -441,6 +447,7 @@ def process_args(guest, args):
   huge = False
   spice = False
   mirror = False
+  uefi = False
   memory = qemu_model_drive['model']['memory']
   for arg in args[1:]:
     head,sep,tail = arg.partition(':')
@@ -497,6 +504,10 @@ def process_args(guest, args):
       huge = True
     elif arg == 'spice':
       spice = True
+    elif arg == 'uefi':
+      uefi = True
+  if not uefi:
+    qemu_parts['uefi'] = {}
   if not vgahack:
     qemu_parts['vgahack'] = {}
   if not mirror:
