@@ -649,7 +649,7 @@ def do_launch(guest, args):
     mounting.perform(host_conf['smb'])
 
   if tpm:
-    tpm_process = Popen(['swtpm', 'socket', '--tpm2', '--tpmstate', 'dir=tpm', '--ctrl', 'type=unixio,path=tpm/tpm-sock', '--log' ,'level=20'])
+    tpm_process = Popen(['swtpm', 'socket', '--tpm2', '--tpmstate', 'dir=tpm', '--ctrl', 'type=unixio,path=tpm/tpm-sock'])
     sleep(1)
     
   # run the vm
