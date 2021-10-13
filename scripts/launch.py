@@ -664,7 +664,7 @@ def do_launch(guest, args):
   if mirror or scream:
     sleep(2)
   if mirror:
-    args = ['sudo', '-E', '-u', '#1000', 'looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes', 'win:position=0x0', 'input:escapeKey=72']
+    args = ['sudo', '-E', '-u', '#1000', 'looking-glass-client', 'win:autoResize=yes', 'opengl:amdPinnedMem=no', 'win:borderless=yes', 'win:position=0x0', 'input:escapeKey=119']
     if spice:
       Popen(['chmod', '777', '/tmp/looking-glass.socket']).wait()
       args.extend(['spice:port=0', 'spice:host=/tmp/looking-glass.socket'])
