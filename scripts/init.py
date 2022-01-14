@@ -222,7 +222,7 @@ def proceed():
 def where_in_sysfs(pci_id):
   p1 = Popen(['find', '/sys/devices', '-name', '0000:' + pci_id],
 	     stdout = PIPE)
-  return p1.communicate()[0]
+  return p1.communicate()[0].decode('utf-8')
 
 
 # Find the pcidev locations of all devices used by pci_id, up to
@@ -278,7 +278,7 @@ def pci_device_to_stubs(pci_devices):
 def look_for_procs(stanza):
   p1 = Popen(['ps', '-A'], stdout=PIPE)
   p2 = Popen(['grep', stanza], stdin=p1.stdout, stdout=PIPE)
-  procs = p2.communicate()[0].splitlines()
+  procs = p2.communicate()[0].decode('utf-8').splitlines()
   return len(procs) > 0
 
 
@@ -318,7 +318,7 @@ def setup_samba():
   if not os.path.exists('conf'):
     call(['mkdir', 'conf'])
     call(['chown', username+':'+username, 'conf'])
-  with open('conf/smb.conf', 'wb') as f:
+  with open('conf/smb.conf', 'w') as f:
     f.write(conf)
     chown_user('conf/smb.conf')
   print('Host-only samba configuration written.\n')
@@ -332,11 +332,12 @@ def select_vga():
   print(str_vga)
   p1 = Popen('lspci', stdout=PIPE)
   p2 = Popen(['grep', 'VGA'], stdin=p1.stdout, stdout=PIPE)
-  vgas = p2.communicate()[0].splitlines()
+  vgas = p2.communicate()[0].decode('utf-8').splitlines()
+  print(vgas)
   if len(vgas) <= 1:
     print('WARNING: You do not seem to have a secondary vga adapter.')
   else:
-    print('Your 2nd GPU appears to be at', vgas[-1].split(' ')[0])
+    print(f'Your 2nd GPU appears to be at {vgas[-1].split(" ")[0]}')
   print('Select your secondary vga adapter.\n'\
     '0) None')
   i = 1
@@ -380,7 +381,7 @@ def install_vfio_bind_service(pci_cards):
   d = os.path.dirname(init_system[1]['location'])
   if not os.path.exists(d):
       os.makedirs(d)
-  with open(init_system[1]['location'], 'wb') as f:
+  with open(init_system[1]['location'], 'w') as f:
     f.write(init_system[1]['script'].format(' '.join(pci_cards)))
   files_modified.append(init_system[1]['location'])
   if 'postinstall' in init_system[1]:
@@ -392,7 +393,7 @@ def install_vfio_bind_service(pci_cards):
 
 
 def install_vfio_bind_script():
-  with open(vfio_bind_location, 'wb') as f:
+  with open(vfio_bind_location, 'w') as f:
     f.write(str_vfio_bind)
   call(['sudo', 'chmod', 'u+x', vfio_bind_location])
   files_modified.append(vfio_bind_location)

@@ -100,6 +100,7 @@ def inline_add(fname, parms):
 # key_values = some sort of dict
 # e.g. { 'pci-stubs.ids'=['0012:3456', '1234:45678'], 'debug'=''}
 # will add "pci-stubs.ids=0012:3456,1234:45678 debug" to the list
+# FIXME: breaks /etc/mkinitcpio.conf which uses parenthesis instead of quotes.
 def inline_key_value_add(fname, var, key_values):
   with open(fname, 'r') as f:
     config = f.read().split('\n')
@@ -145,7 +146,7 @@ def install_module_initramfs(modules):
   return mod_info['loc']
 
 def install_module_note(module, note):
-  fname = f'/etc/modprobe.d/{module}/.conf'
+  fname = f'/etc/modprobe.d/{module}.conf'
   inline_add(fname, note)
   return fname
 
