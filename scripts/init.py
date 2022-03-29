@@ -101,9 +101,11 @@ for dev in "$@"; do
         vendor=$(cat /sys/bus/pci/devices/$dev/vendor)
         device=$(cat /sys/bus/pci/devices/$dev/device)
         if [ -e /sys/bus/pci/devices/$dev/driver ]; then
+                echo 'device_specific' > /sys/bus/pci/devices/$dev/reset_method
                 echo $dev > /sys/bus/pci/devices/$dev/driver/unbind
         fi
         echo $vendor $device > /sys/bus/pci/drivers/vfio-pci/new_id
+        echo 'device_specific' > /sys/bus/pci/devices/$dev/reset_method
 done
 '''
 
