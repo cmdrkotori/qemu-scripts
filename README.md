@@ -52,9 +52,11 @@ system the line read
 
 10. Update the script with the disk location.
 
-11. Download uefi vars from the [fedora's edk2-ovmf] package.  You want
-the files `OVMF_CODE.secboot.fd` and `OVMF_VARS.secboot.fd`.  Rename
-them to `OVMF_CODE.fd` and `OVMF_VARS.fd` and stash them somewhere.
+11. Download OVMF files:  **Windows guest:** Grab them from
+[fedora's edk2-ovmf] package; you want the files `OVMF_CODE.secboot.fd`
+and `OVMF_VARS.secboot.fd`; rename them to `OVMF_CODE.fd` and
+`OVMF_VARS.fd` and stash them somewhere.  **MacOS guest:** Grab the ovmf
+files from the [macos-kvm-pci-passthrough repo] and stash them somewhere.
 
 12. Update the script with the OVMF file locations.
 
@@ -178,3 +180,4 @@ that from the host.)
 [fedora's edk2-ovmf]:https://rpmfind.net/linux/rpm2html/search.php?query=edk2-ovmf
 [mac gist]:https://gist.github.com/cmdrkotori/d4f78cd814e185b820b19f938392d58a
 [windows gist]:https://gist.github.com/cmdrkotori/ba1ad88a705616a3bcb8d1ddf70c114b
+[macos-kvm-pci-passthrough repo]:https://github.com/yoonsikp/macos-kvm-pci-passthrough
